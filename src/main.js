@@ -1,62 +1,87 @@
 'use strict';
 
-//const { Client } = require('pg');
 const ags = require('./ags');
 const onvista = require('./onvista');
 const fourTraders = require('./fourTraders');
 const yahoo = require('./yahoo');
 
-/*const client = new Client({
-    user: '',
-    host: process.env.DATABASE_URLhe,
-    databae: '',
-    password: '',
-    port: 3211,
-});
-
-client.connect();
-
-let saveToDb = function() {
-    const res = client.query('', (err, res) => {
-        // TODO Do stuff
-        client.end();
-    });
-};*/
-
 let collectAllFor = function(ag) {
-    
+    return Promise.all([
+        yahoo.scrapeData(ags.find(ag).yahoo),
+        onvista.scrapeData(ags.find(ag).onvista),
+        fourTraders.scrapeData(ags.find(ag).fourTraders),
+    ]).then((values) => {
+        let result = {};
+        result.ag = values[0].ag;
+        result.aktuellerKurs = values[0].aktuellerKurs;
+        result.historischeKurse = values[0].historischeKurse;
+        result.kennzahlen = values[1];
+        result.analysten = values[2];
+        return result;
+    });
 };
 
-/*setTimeout(function() {
-    ags.ags
-        .map(ag => ag.id)
-        .forEach(collectAllFor);
-}, 10000);*/
+/* Temporary solution; better write this stuff into a db */
+const Hapi = require('hapi');
+const Good = require('good');
+const Boom = require('boom');
 
-/*
-onvista.scrapeData(ags.find('siemens_de').onvista)
-    .then(function(data) {
-        console.dir(data);
-    });
-onvista.scrapeData(ags.find('allianz_de').onvista)
-    .then(function(data) {
-        console.dir(data);
-    });
+const server = new Hapi.Server();
+server.connection({
+    port: process.env.PORT || 3000,
+    host: '0.0.0.0'
+});
 
-fourTraders.scrapeData(ags.find('siemens_de').fourTraders)
-    .then(function(data) {
-        console.dir(data);
+server.route({
+    method: 'GET',
+    path: '/aktien',
+    handler: function(request, reply) {
+        let ags = request.query.ags;
+        if (ags) {
+            let aktien = Promise.all(ags
+                .split(',')
+                .map(collectAllFor));
+            return reply(aktien)
+                .code(200)
+                .type('application/json');
+        } else {
+            return reply()
+                .code(404);
+        }
+    },
+    config: {
+        cors: {
+            origin: [ '*' ],
+            additionalHeaders: [ 'cache-control', 'x-requested-with' ]
+        }
+    }
+});
+
+server.register({
+    register: Good,
+    options: {
+        reporters: {
+            console: [{
+                module: 'good-squeeze',
+                name: 'Squeeze',
+                args: [{
+                    response: '*',
+                    log: '*'
+                }]
+            }, {
+                module: 'good-console',
+            }, 'stdout']
+        }
+    }
+}, (err) => {
+    if (err) {
+        throw err; // something bad happened loading the plugin
+    }
+
+    server.start((err) => {
+        if (err) {
+            throw err;
+        }
+        server.log('info', `Server running at: ${server.info.uri}`);
     });
-fourTraders.scrapeData(ags.find('allianz_de').fourTraders)
-    .then(function(data) {
-        console.dir(data);
-    });
-*/
-yahoo.scrapeData(ags.find('siemens_de').yahoo)
-    .then(function(data) {
-        console.dir(data);
-    });
-/*yahoo.scrapeData(ags.find('allianz_de').yahoo)
-    .then(function(data) {
-        console.dir(data);
-    });*/
+});
