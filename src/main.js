@@ -36,8 +36,8 @@ server.route({
     method: 'GET',
     path: '/aktien',
     handler: function(request, reply) {
-        let ags = request.query.ags;
-        if (ags) {
+        let requestedAgs = request.query.ags;
+        if (requestedAgs) {
             let aktien = Promise.all(ags
                 .split(',')
                 .map(collectAllFor));
@@ -54,6 +54,16 @@ server.route({
             origin: [ '*' ],
             additionalHeaders: [ 'cache-control', 'x-requested-with' ]
         }
+    }
+});
+
+server.route({
+    method: 'GET',
+    path: '/kuerzel',
+    handler: function(request, reply) {
+        return reply(ags.ags.map(ag => ag.id))
+            .code(200)
+            .type('application/json');
     }
 });
 
