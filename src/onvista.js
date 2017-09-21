@@ -34,19 +34,47 @@ const scrapeData = function(onvista_id) {
                         .trim();
                     }).get();
                 
-                let gewinnProAktie = gewinn
-                    .find('tbody')
-                    .find('tr')
-                    .eq(0)
-                    .find('.ZAHL')
-                    .slice(-5)
-                    .map(function() {
-                        return $(this)
-                        .text()
-                        .trim();
-                    }).get();
+                let gewinnProAktie =
+                    gewinn
+                        .find('tbody')
+                        .find('tr')
+                        .eq(0)
+                        .find('.ZAHL')
+                        .slice(-5)
+                        .map(function() {
+                            return parseFloat(
+                                $(this)
+                                .text()
+                                .trim()
+                                .replace(",", ".")
+                            );
+                        }).get();
 
-                let kgv = gewinn
+                let kgv =
+                    gewinn
+                        .find('tbody')
+                        .find('tr')
+                        .eq(1)
+                        .find('.ZAHL')
+                        .slice(-5)
+                        .map(function() {
+                            return parseFloat(
+                                $(this)
+                                .text()
+                                .trim()
+                                .replace(",", ".")
+                            );
+                        }).get();
+
+                return {
+                    years, gewinnProAktie, kgv
+                }
+            })();
+
+            let eigenkapitalquote = (() => {
+                let bilanz = $(this).find('table').eq(5);
+
+                return bilanz
                     .find('tbody')
                     .find('tr')
                     .eq(1)
@@ -57,26 +85,6 @@ const scrapeData = function(onvista_id) {
                         .text()
                         .trim();
                     }).get();
-
-                return {
-                    years, gewinnProAktie, kgv
-                }
-            })();
-            
-            let eigenkapitalquote = (() => {
-                let bilanz = $(this).find('table').eq(5);
-
-                return bilanz
-                .find('tbody')
-                .find('tr')
-                .eq(1)
-                .find('.ZAHL')
-                .slice(-5)
-                .map(function() {
-                    return $(this)
-                    .text()
-                    .trim();
-                }).get();
             })();
 
             let { ebitMarge, eigenkapitalrendite } = (() => {
