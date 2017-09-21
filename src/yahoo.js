@@ -35,7 +35,7 @@ const scrapeData = function(yahoo_id) {
         let historischeKurse = $('#Main')
             .find('tbody')
             .find('tr')
-            .slice(0, 15)
+            .slice(0, 30)
             .map(function() {
                 let datum = $(this)
                     .find('.Ta\\(start\\)')
