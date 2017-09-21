@@ -6,10 +6,13 @@ const fourTraders = require('./fourTraders');
 const yahoo = require('./yahoo');
 
 let collectAllFor = function(ag) {
+    let agData = ags.find(ag);
+    console.dir(ag);
+    console.dir(agData);
     return Promise.all([
-        yahoo.scrapeData(ags.find(ag).yahoo),
-        onvista.scrapeData(ags.find(ag).onvista),
-        fourTraders.scrapeData(ags.find(ag).fourTraders),
+        yahoo.scrapeData(agData.yahoo),
+        onvista.scrapeData(agData.onvista),
+        fourTraders.scrapeData(agData.fourTraders),
     ]).then((values) => {
         let result = {};
         result.ag = values[0].ag;
@@ -38,9 +41,11 @@ server.route({
     handler: function(request, reply) {
         let requestedAgs = request.query.ags;
         if (requestedAgs) {
-            let aktien = Promise.all(ags
-                .split(',')
-                .map(collectAllFor));
+            let aktien = Promise.all(
+                requestedAgs
+                    .split(',')
+                    .map(collectAllFor)
+                );
             return reply(aktien)
                 .code(200)
                 .type('application/json');

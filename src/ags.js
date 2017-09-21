@@ -124,12 +124,5 @@ exports.ags = [
 ];
 
 exports.find = function(id) {
-    switch (id) {
-    case siemens_de.id:
-        return siemens_de;
-    case allianz_de.id:
-        return allianz_de;
-    default:
-        return {};
-    }
+    return exports.ags.filter(ag => ag.id === id)[0];
 }
