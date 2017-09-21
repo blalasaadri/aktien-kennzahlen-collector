@@ -26,9 +26,12 @@ const scrapeData = function(yahoo_id) {
         let ag = $('h1')
             .text()
             .trim();
-        let aktuellerKurs = $('.Trsdu\\(0\\.3s\\).Fw\\(b\\).Fz\\(36px\\).Mb\\(-4px\\).D\\(ib\\)')
-            .text()
-            .trim();
+        let aktuellerKurs = parseFloat(
+            $('.Trsdu\\(0\\.3s\\).Fw\\(b\\).Fz\\(36px\\).Mb\\(-4px\\).D\\(ib\\)')
+                .text()
+                .trim()
+                .replace(",", ".")
+        );
         let historischeKurse = $('#Main')
             .find('tbody')
             .find('tr')
@@ -39,11 +42,14 @@ const scrapeData = function(yahoo_id) {
                     .text()
                     .trim();
                 datum = moment(datum, 'DD. MMMM. YYYY').format('YYYY-MM-DD');
-                let boersenschluss = $(this)
-                    .find('td')
-                    .eq(4)
-                    .text()
-                    .trim();
+                let boersenschluss = parseFloat(
+                    $(this)
+                        .find('td')
+                        .eq(4)
+                        .text()
+                        .trim()
+                        .replace(",", ".")
+                );
                 return {
                     datum, boersenschluss
                 }
