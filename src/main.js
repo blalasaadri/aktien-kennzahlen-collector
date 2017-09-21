@@ -4,6 +4,7 @@
 const ags = require('./ags');
 const onvista = require('./onvista');
 const fourTraders = require('./fourTraders');
+const yahoo = require('./yahoo');
 
 /*const client = new Client({
     user: '',
@@ -32,14 +33,15 @@ let collectAllFor = function(ag) {
         .forEach(collectAllFor);
 }, 10000);*/
 
-/*onvista.scrapeData(ags.find('siemens_de').onvista)
+/*
+onvista.scrapeData(ags.find('siemens_de').onvista)
     .then(function(data) {
         console.dir(data);
     });
 onvista.scrapeData(ags.find('allianz_de').onvista)
     .then(function(data) {
         console.dir(data);
-    });*/
+    });
 
 fourTraders.scrapeData(ags.find('siemens_de').fourTraders)
     .then(function(data) {
@@ -49,3 +51,12 @@ fourTraders.scrapeData(ags.find('allianz_de').fourTraders)
     .then(function(data) {
         console.dir(data);
     });
+*/
+yahoo.scrapeData(ags.find('siemens_de').yahoo)
+    .then(function(data) {
+        console.dir(data);
+    });
+/*yahoo.scrapeData(ags.find('allianz_de').yahoo)
+    .then(function(data) {
+        console.dir(data);
+    });*/
