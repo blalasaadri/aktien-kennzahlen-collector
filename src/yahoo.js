@@ -58,7 +58,8 @@ const scrapeData = function(yahoo_id) {
         return {
             ag,
             aktuellerKurs,
-            historischeKurse
+            historischeKurse,
+            yahoo_id
         }
     });
 };

@@ -5,12 +5,10 @@ const onvista = require('./onvista');
 const fourTraders = require('./fourTraders');
 const yahoo = require('./yahoo');
 
-let collectAllFor = function(ag) {
+let collectAllFor = function(ag, yahooData) {
     let agData = ags.find(ag);
-    console.dir(ag);
-    console.dir(agData);
     return Promise.all([
-        yahoo.scrapeData(agData.yahoo),
+        yahooData || yahoo.scrapeData(agData.yahoo),
         onvista.scrapeData(agData.onvista),
         fourTraders.scrapeData(agData.fourTraders),
     ]).then((values) => {
@@ -53,6 +51,36 @@ server.route({
             return reply()
                 .code(404);
         }
+    },
+    config: {
+        cors: {
+            origin: [ '*' ],
+            additionalHeaders: [ 'cache-control', 'x-requested-with' ]
+        }
+    }
+});
+
+server.route({
+    method: 'GET',
+    path: '/topaktien',
+    handler: function(request, reply) {
+        let findIdByYahooId = function(yahooId) {
+            return ags.ags.filter(ag => ag.yahoo === yahooId)[0].id;
+        };
+
+        reply(
+            Promise
+                .all(ags.ags
+                    .map(ag => yahoo.scrapeData(ag.yahoo))
+                ).then(values => {
+                    return values
+                        .sort((a, b) => {
+                            return b.aktuellerKurs - a.aktuellerKurs
+                        })
+                })
+                .then(values => values.slice(0, process.env.TOPAKTIEN || 5))
+                .then(values => Promise.all(values.map(yahooData => collectAllFor(findIdByYahooId(yahooData.yahoo_id), yahooData))))
+        );
     },
     config: {
         cors: {
