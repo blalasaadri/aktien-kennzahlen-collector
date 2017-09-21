@@ -64,6 +64,8 @@ server.route({
     method: 'GET',
     path: '/topaktien',
     handler: function(request, reply) {
+        let numberOfShares = request.query.number || process.env.TOPAKTIEN || 5;
+
         let findIdByYahooId = function(yahooId) {
             return ags.ags.filter(ag => ag.yahoo === yahooId)[0].id;
         };
@@ -78,7 +80,7 @@ server.route({
                             return b.aktuellerKurs - a.aktuellerKurs
                         })
                 })
-                .then(values => values.slice(0, process.env.TOPAKTIEN || 5))
+                .then(values => values.slice(0, numberOfShares))
                 .then(values => Promise.all(values.map(yahooData => collectAllFor(findIdByYahooId(yahooData.yahoo_id), yahooData))))
         );
     },
